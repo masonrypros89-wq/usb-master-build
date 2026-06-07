@@ -1,0 +1,43 @@
+name: Unzip and Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          unzip "usb_master_complete (1).zip"
+
+      - name: Show files
+        run: |
+          find . -type f | head -100
+
+      - name: Find gradlew
+        run: |
+          find . -name gradlew
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build APK
+        run: |
+          PROJECT_DIR=$(dirname $(find . -name gradlew | head -1))
+          cd "$PROJECT_DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: |
+            **/app/build/outputs/apk/debug/*.apk
